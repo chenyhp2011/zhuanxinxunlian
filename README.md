@@ -3,7 +3,7 @@
 
 # 数学思维训练营 (Math Mind Training Camp)
 
-**一个基于认知科学原理，旨在从根本上提升计算细心度和审题能力的Python应用。**
+**一个基于认知科学原理，提升计算细心度和审题能力的Python应用。**
 
 [![Python Version](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![Framework](https://img.shields.io/badge/Framework-Streamlit-red.svg)](https://streamlit.io)
@@ -15,7 +15,7 @@
 
 在数学学习中，“粗心”和“读题忘条件”是两个长期存在的痛点。传统的刷题训练往往治标不治本。本项目认为，这些问题的根源不在于数学知识本身，而在于学生底层的**认知能力**存在短板。
 
-“数学思维训练营”不是一个普通的刷题工具，它是一个认知能力训练器。它通过两个核心模块，将认知科学的研究成果转化为可交互的训练任务，旨在锻炼学生的**执行功能**（特别是工作记忆和抑制控制）和**结构化思维能力**。
+“数学思维训练营”不是一个普通的刷题工具，它是一个认知能力训练器。它通过两个核心模块，将认知科学的研究成果转化为可交互的训练任务，锻炼学生的**执行功能**（特别是工作记忆和抑制控制）和**结构化思维能力**。
 
 本项目完全开源，希望能为有同样困扰的学生、老师和家长提供一个科学、有效的训练工具。
 
@@ -63,7 +63,7 @@
 ## 📂 应用结构
 
 ```
-math_trainer/
+zhuanxinxunlian/
 │
 ├── app.py                   # 主程序入口，应用的首页
 ├── requirements.txt         # 项目依赖库文件
@@ -98,8 +98,8 @@ math_trainer/
 将本项目下载或克隆到您的本地。
 
 ```bash
-git clone [https://github.com/your-username/math-trainer.git](https://github.com/your-username/math-trainer.git)
-cd math-trainer
+git clone [https://github.com/chenyhp2011/zhuanxinxunlian.git](https://github.com/chenyhp2011/zhuanxinxunlian.git)
+cd zhuanxinxunlian
 ```
 
 ### 3. 创建虚拟环境并安装依赖
@@ -168,7 +168,7 @@ Feedback_Column:: {"Strategy_B":"题目要求计算总价，相减是计算差�
 
 ## 🤝 贡献
 
-欢迎任何形式的贡献！如果您有任何想法、建议或发现了Bug，请随时通过 [GitHub Issues](https://github.com/your-username/math-trainer/issues) 提交。
+欢迎任何形式的贡献！如果您有任何想法、建议或发现了Bug，请随时通过 [GitHub Issues](https://github.com/chenyhp2011/zhuanxinxunlian/issues) 提交。
 
 ## 📄 许可证
 
