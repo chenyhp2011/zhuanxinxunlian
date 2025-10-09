@@ -9,7 +9,7 @@ st.title("🧮 心算能力训练")
 
 # --- 状态初始化 ---
 if 'game_mode' not in st.session_state:
-    st.session_state.game_mode = 'selection'  # 'selection', 'playing', 'game_over'
+    st.session_state.game_mode = 'selection'
     st.session_state.calc_level = 0
     st.session_state.calc_score = 0
     st.session_state.calc_questions_answered = 0
@@ -23,7 +23,6 @@ if 'game_mode' not in st.session_state:
 #  回调函数
 # ==============================================================================
 def start_game(level_choice):
-    """回调函数：准备并开始一个新游戏"""
     st.session_state.game_mode = 'playing'
     st.session_state.calc_level = level_choice
     st.session_state.calc_score = 0
@@ -36,7 +35,6 @@ def start_game(level_choice):
 
 
 def back_to_selection():
-    """回调函数：返回难度选择界面"""
     st.session_state.game_mode = 'selection'
 
 
@@ -44,7 +42,6 @@ def back_to_selection():
 #  界面渲染函数
 # ==============================================================================
 def show_difficulty_selection():
-    """显示难度选择界面"""
     st.info("请选择一个难度等级开始训练。每道题都有时间限制！")
     cols = st.columns(3)
     levels = ["等级1 (5秒)", "等级2 (10秒)", "等级3 (15秒)", "等级4 (20秒)", "等级5 (25秒)", "等级6 (30秒)"]
@@ -53,19 +50,25 @@ def show_difficulty_selection():
 
 
 def show_game_interface():
-    """显示游戏主界面"""
-
-    # ==========================================================================
-    #  终极修复：一个“渲染同步点” (The Final Fix: A Render Sync Point)
-    #  基于您的关键发现，我们在此处放置一个实际的、但不可见的渲染指令。
-    #  st.empty() 会创建一个空的UI容器，它本身虽然看不见，
-    #  但它的存在强制Streamlit的渲染后端在继续执行前“提交”并同步UI状态，
-    #  从而解决了这个顽固的“海森堡bug”。
-    # ==========================================================================
-    st.empty()
-
     time_limit = st.session_state.calc_level * 5
+    time_elapsed = time.time() - st.session_state.start_time
+    time_left = time_limit - time_elapsed
 
+    # --- 核心修改：在渲染任何东西之前，先检查是否超时 ---
+    if time_left < 0:
+        st.session_state.last_feedback = f"超时！正确答案是: {st.session_state.current_answer} 💪"
+        st.session_state.calc_questions_answered += 1
+        if st.session_state.calc_questions_answered < 20:
+            problem, answer = generate_math_problem(st.session_state.calc_level)
+            st.session_state.current_problem = problem
+            st.session_state.current_answer = answer
+            st.session_state.start_time = time.time()
+        else:
+            st.session_state.game_mode = 'game_over'
+        # 立即刷新以显示下一题或结束界面
+        st.rerun()
+
+    # --- 界面渲染 ---
     st.subheader(f"等级 {st.session_state.calc_level}")
     score_col, progress_col = st.columns(2)
     score_col.metric("得分", st.session_state.calc_score)
@@ -74,33 +77,7 @@ def show_game_interface():
     st.markdown("---")
     st.header(f"`{st.session_state.current_problem} = ?`")
 
-    def handle_answer(is_correct, reason=""):
-        if is_correct:
-            st.session_state.calc_score += 10;
-            st.session_state.last_feedback = "正确！🎉"
-        else:
-            correct_answer = st.session_state.current_answer;
-            st.session_state.last_feedback = f"{reason} 正确答案是: {correct_answer} 💪"
-        st.session_state.calc_questions_answered += 1
-        if st.session_state.calc_questions_answered < 20:
-            problem, answer = generate_math_problem(st.session_state.calc_level);
-            st.session_state.current_problem = problem;
-            st.session_state.current_answer = answer;
-            st.session_state.start_time = time.time()
-        else:
-            st.session_state.game_mode = 'game_over'
-
-    def handle_submit():
-        try:
-            user_answer = int(st.session_state.user_input)
-        except (ValueError, TypeError):
-            user_answer = None
-        if user_answer is not None:
-            handle_answer(user_answer == st.session_state.current_answer, "回答错误！")
-        elif st.session_state.user_input != "":
-            handle_answer(False, "输入无效！")
-        st.session_state.user_input = ""
-
+    # 反馈显示区
     feedback_placeholder = st.empty()
     if st.session_state.last_feedback:
         if "正确" in st.session_state.last_feedback:
@@ -108,25 +85,50 @@ def show_game_interface():
         else:
             feedback_placeholder.error(st.session_state.last_feedback)
 
-    st.text_input("请输入你的答案:", key="user_input", on_change=handle_submit)
+    # --- 核心修改：使用 st.form 来处理提交 ---
+    with st.form(key="answer_form", clear_on_submit=True):
+        user_input = st.text_input("请输入你的答案:", key="answer_input")
+        submitted = st.form_submit_button("提交答案")
 
-    time_elapsed = time.time() - st.session_state.start_time
-    time_left = time_limit - time_elapsed
+        if submitted:
+            # 提交时，再次检查时间，防止在点击瞬间超时
+            time_elapsed_on_submit = time.time() - st.session_state.start_time
+            if time_elapsed_on_submit > time_limit:
+                st.session_state.last_feedback = f"超时！正确答案是: {st.session_state.current_answer} 💪"
+            else:
+                try:
+                    user_answer_int = int(user_input)
+                    if user_answer_int == st.session_state.current_answer:
+                        st.session_state.calc_score += 10
+                        st.session_state.last_feedback = "正确！🎉"
+                    else:
+                        st.session_state.last_feedback = f"回答错误！正确答案是: {st.session_state.current_answer} 💪"
+                except (ValueError, TypeError):
+                    st.session_state.last_feedback = f"输入无效！正确答案是: {st.session_state.current_answer} 💪"
 
+            # 更新题目计数并准备下一题
+            st.session_state.calc_questions_answered += 1
+            if st.session_state.calc_questions_answered < 20:
+                problem, answer = generate_math_problem(st.session_state.calc_level)
+                st.session_state.current_problem = problem
+                st.session_state.current_answer = answer
+                st.session_state.start_time = time.time()
+            else:
+                st.session_state.game_mode = 'game_over'
+
+            st.rerun()
+
+    # 计时器显示（不再驱动刷新，只作为视觉展示）
     timer_placeholder = st.empty()
     timer_placeholder.progress(max(0, time_left) / time_limit, text=f"剩余时间: {max(0, int(time_left))} 秒")
 
-    if time_left < 0:
-        handle_answer(False, "超时！")
-        st.rerun()
-
+    # 保持一个温和的刷新率，让计时器看起来稍微有点动态，但频率远低于之前
     if st.session_state.game_mode == 'playing':
-        time.sleep(0.1)
+        time.sleep(1)
         st.rerun()
 
 
 def show_game_over_screen():
-    """显示游戏结束界面"""
     st.balloons()
     st.success(f"训练完成！你的最终得分是: {st.session_state.calc_score}")
     st.button("返回难度选择", on_click=back_to_selection)
