@@ -42,7 +42,7 @@ def generate_math_problem(level: int):
             operands_list.append(expr)
             values_list.append(val)
         else:
-            val = random.randint(10, 99)
+            val = random.randint(10, 30)
             operands_list.append(str(val))
             values_list.append(val)
 
@@ -72,4 +72,5 @@ if __name__ == '__main__':
     # 这个部分用于独立测试该文件逻辑是否正确
     for i in range(1, 7):
         problem, answer = generate_math_problem(i)
+
         print(f"等级 {i}: 题目 = {problem}, 答案 = {answer}")
